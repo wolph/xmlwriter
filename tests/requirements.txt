@@ -1,0 +1,8 @@
+# pip doesn't like duplicate imports and py.test also tests the docs somewhat
+# so let's just import everything through those imports
+-r ../docs/requirements.txt
+pytest
+pytest-cache
+pytest-cover
+pytest-flakes
+pytest-pep8
