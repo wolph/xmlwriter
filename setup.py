@@ -19,10 +19,6 @@ with open("xmlwriter/__about__.py") as fp:
 install_reqs = []
 tests_reqs = []
 
-if sys.version_info < (2, 7):
-    install_reqs += ['argparse']
-    tests_reqs += ['unittest2']
-
 
 def parse_requirements(filename):
     '''Read the requirements from the filename, supports includes'''
@@ -40,6 +36,7 @@ def parse_requirements(filename):
                     requirements.append(line)
 
     return requirements
+
 
 install_reqs += parse_requirements('requirements.txt')
 tests_reqs += parse_requirements('tests/requirements.txt')
@@ -68,6 +65,7 @@ class PyTest(TestCommand):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
+
 setup(
     name=about['__package_name__'],
     version=about['__version__'],
@@ -89,11 +87,10 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: Implementation :: PyPy',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 )
