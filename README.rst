@@ -1,7 +1,6 @@
-=========
-XmlWriter
-=========
-
+==============================================================================
+XmlWriter (WORK IN PROGRESS! WILL BE RELEASED SOON!)
+==============================================================================
 
 .. image:: https://travis-ci.org/WoLpH/xmlwriter.svg?branch=master
     :alt: XmlWriter test status
@@ -22,7 +21,7 @@ XmlWriter
 ``xmlwriter`` - Python XML writer class inspired by the C# XmlWriter and the Django ORM
 
 Links
------
+------------------------------------------------------------------------------
 
 * Documentation
     - http://xmlwriter.readthedocs.org/en/latest/
@@ -36,7 +35,7 @@ Links
     - http://wol.ph/
 
 Install
--------
+------------------------------------------------------------------------------
 
 To install the latest release:
 
@@ -64,12 +63,12 @@ To run the tests you can use the `py.test` command or just run `tox` to test
 everything in all supported python versions.
 
 Usage
------
+------------------------------------------------------------------------------
 
 * TODO
 
 Contributing
-------------
+------------------------------------------------------------------------------
 
 Help is greatly appreciated, just please remember to clone the **development**
 branch and to run `tox` before creating pull requests.
@@ -80,10 +79,10 @@ check those before creating a pull request.
 Development branch: https://github.com/WoLpH/xmlwriter/tree/development
 
 Info
-----
+------------------------------------------------------------------------------
 
 ==============  ==========================================================
-Python support  Python 2.7, >= 3.3
+Python support  Python >= 3.3
 Blog            http://wol.ph/
 Source          https://github.com/WoLpH/xmlwriter
 Documentation   http://xmlwriter.rtfd.org
