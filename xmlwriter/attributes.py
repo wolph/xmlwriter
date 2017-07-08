@@ -6,14 +6,16 @@ from . import base
 class Attribute(base.XmlBase):
 
     def __init__(self, default=definitions.Undefined, required=True):
-        base.XmlBase.__init__(self, default, required,
-                              xml_type=XmlType.attribute)
+        base.XmlBase.__init__(
+            self, base.StorageType.attribute, default, required)
+    __init__.safe_to_replace = True
 
 
-class StringAttribute(Attribute):
-    type = str
+class StringAttribute(base.StringXmlBase, Attribute):
+    pass
 
 
-class IntegerAttribute(Attribute):
-    type = int
+class IntegerAttribute(base.IntegerXmlBase, Attribute):
+    pass
+
 

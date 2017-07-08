@@ -5,8 +5,22 @@ from . import base
 
 class Element(base.XmlBase):
 
-    def __init__(self, xml_type, default=definitions.Undefined, required=True):
-        base.XmlBase.__init__(self, default, required, xml_type)
+    def __init__(self, default=definitions.Undefined, required=True,
+                 tail=True):
+        if tail:
+            storage_type = base.StorageType.tail
+        else:
+            storage_type = base.StorageType.head
 
-    def __call__(self):
-        return self.type(self.get_value())
+        base.XmlBase.__init__(self, storage_type, default, required)
+    __init__.safe_to_replace = True
+
+
+class StringElement(base.StringXmlBase, Element):
+    pass
+
+
+class IntegerElement(base.IntegerXmlBase, Element):
+    pass
+
+

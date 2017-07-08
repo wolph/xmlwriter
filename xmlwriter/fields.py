@@ -1,29 +1,19 @@
-# -*- coding: utf-8 -*-
-import enum
-import itertools
-import collections
-
 from . import definitions
 from . import base
 
+class Field(base.XmlBaseBase):
 
-class Element(base.XmlBase):
+    def __init__(self, name=None, default=definitions.Undefined, type=str):
+        self._name = name
+        self._default = default
+        self._type = type
 
-    def __init__(self, default=definitions.Undefined, required=True,
-                 tail=True):
-        if tail:
-            xml_type = XmlType.tail
-        else:
-            xml_type = XmlType.head
+    def _to_type(self, value):
+        return self._type(value)
 
-        base.XmlBase.__init__(self, default, required, xml_type)
-
-
-class StringElement(Element):
-    type = str
+    def _to_string(self, value):
+        return str(value)
 
 
-class IntegerElement(Element):
-    type = int
-
-
+class Attribute(Field):
+    pass
