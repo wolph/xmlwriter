@@ -1,5 +1,5 @@
 ==============================================================================
-XmlWriter (WORK IN PROGRESS! WILL BE RELEASED SOON!)
+XmlWriter
 ==============================================================================
 
 .. image:: https://travis-ci.org/WoLpH/xmlwriter.svg?branch=master
