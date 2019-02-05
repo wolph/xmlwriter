@@ -7,9 +7,13 @@ XmlWriter
 Python XML writer class inspired by the C# XmlWriter and the Django ORM
 
 '''
-from .xmlwriter import Xmlwriter
+from . import models
+from . import elements
+from . import attributes
 
 __all__ = [
-    'Xmlwriter',
+    'models',
+    'elements',
+    'attributes',
 ]
 

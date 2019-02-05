@@ -1,21 +1,22 @@
-# -*- coding: utf-8 -*-
-from . import definitions
 from . import base
+from . import types
 
 
-class Attribute(base.XmlBase):
+class Attribute(base.Base):
 
-    def __init__(self, default=definitions.Undefined, required=True):
-        base.XmlBase.__init__(
-            self, base.StorageType.attribute, default, required)
-    __init__.safe_to_replace = True
+    def __set__(self, instance, value):
+        instance.attrib[self._name] = self._from_type(value)
+
+    def __get__(self, instance, owner):
+        return instance.attrib[self._name]
 
 
-class StringAttribute(base.StringXmlBase, Attribute):
+class IntegerAttribute(Attribute, types.IntegerTypeMixin):
     pass
 
 
-class IntegerAttribute(base.IntegerXmlBase, Attribute):
+class StringAttribute(Attribute, types.StringTypeMixin):
     pass
+
 
 

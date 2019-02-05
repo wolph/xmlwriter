@@ -1,26 +1,27 @@
-# -*- coding: utf-8 -*-
-from . import definitions
+from lxml import etree
+
 from . import base
+from . import types
 
 
-class Element(base.XmlBase):
+class Element(base.Base):
+    _element = None
 
-    def __init__(self, default=definitions.Undefined, required=True,
-                 tail=True):
-        if tail:
-            storage_type = base.StorageType.tail
-        else:
-            storage_type = base.StorageType.head
+    def __set__(self, instance, value):
+        if self._element is None:
+            self._element = etree.SubElement(instance, self._name)
 
-        base.XmlBase.__init__(self, storage_type, default, required)
-    __init__.safe_to_replace = True
+        self._element.text = self._from_type(value)
+
+    def __get__(self, instance, owner):
+        return self._to_type(self._element.text)
 
 
-class StringElement(base.StringXmlBase, Element):
+class IntegerElement(Element, types.IntegerTypeMixin):
     pass
 
 
-class IntegerElement(base.IntegerXmlBase, Element):
+class StringElement(Element, types.StringTypeMixin):
     pass
 
 

@@ -1,16 +1,72 @@
-# -*- coding: utf-8 -*-
+import abc
+import inspect
+import logging
 import collections
-import xml.etree.ElementTree as ET
+from lxml import etree
 
-from . import fields
+from . import base
+from . import utils
 
 
-class XmlWriterMeta(type):
+logger = logging.getLogger(__name__)
 
-    registry = dict()
+
+class ModelMeta(abc.ABCMeta):
+
+    registry = collections.OrderedDict()
 
     def __prepare__(name, bases):
         return collections.OrderedDict()
+
+    def get_init(fields):
+        '''
+        Dynamically generate an `__init__` method from a list of fields
+
+        This is a bit of dark magic but still nice if you ask me :)
+        '''
+
+        parameters = []
+        needs_default = False
+        for key, field in fields.items():
+            kwargs = dict(name=key)
+
+            # Get the default if available, once we've gotten a single
+            # element with a default all the following parameters need defaults
+            # or must be keyword only
+            if field._default is not base.Undefined:
+                needs_default = True
+                kwargs['default'] = field._default
+
+            if field._type:
+                kwargs['annotation'] = field._type
+
+            if not needs_default or 'default' in kwargs:
+                kwargs['kind'] = inspect.Parameter.POSITIONAL_OR_KEYWORD
+            else:
+                kwargs['kind'] = inspect.Parameter.KEYWORD_ONLY
+
+            parameters.append(inspect.Parameter(**kwargs))
+
+        signature = inspect.Signature(parameters=parameters)
+
+        def __init__(self, *args, **kwargs):
+            etree.ElementBase.__init__(self)
+
+            if args or kwargs:
+                bound = signature.bind(*args, **kwargs)
+                for key, value in bound.arguments.items():
+                    field = fields[key]
+
+                    # Handle automatic model to dict conversion
+                    if isinstance(value, dict) and issubclass(field, Model):
+                        value = field(**value)
+                        self.append(value)
+
+                    setattr(self, key, value)
+
+        __init__.__signature__ = signature
+
+        return __init__
 
     def get_name(name, namespace):
         parts = []
@@ -22,14 +78,28 @@ class XmlWriterMeta(type):
         return '.'.join(parts)
 
     def __new__(metaclass, name, bases, namespace):
-        data = namespace.setdefault('_data', {})
-        fields = namespace.setdefault('_fields', collections.OrderedDict())
+        fields = collections.OrderedDict()
         for k, v in namespace.items():
-            if isinstance(v, Field):
-                fields[k] = v
-                data[k] = v.default
+            # Skip hidden items
+            if k.startswith('_'):
+                continue
 
-        cls = type.__new__(metaclass, name, bases, namespace)
+            if isinstance(v, base.Base):
+                fields[k] = v
+                if not hasattr(v, '_name'):
+                    v._name = k
+            elif isinstance(v, ModelMeta):
+                fields[utils.camel_to_underscore(k)] = v
+                if not hasattr(v, '_name'):
+                    v._name = k
+            else:
+                logger.info('unknown type: %s=%s', k, v)
+
+        init = namespace.get('__init__')
+        if init is None:
+            namespace['__init__'] = metaclass.get_init(fields)
+
+        cls = abc.ABCMeta.__new__(metaclass, name, bases, namespace)
 
         full_name = metaclass.get_name(name, namespace)
         if full_name in metaclass.registry:
@@ -40,33 +110,24 @@ class XmlWriterMeta(type):
 
         return cls
 
+    @classmethod
+    def __set__(cls, parent, child):
+        # If we're adding a child element, append it to the parent
+        if isinstance(child, Model) and not child._element:
+            parent.append(child)
 
-class XmlWriter(ET.Element, metaclass=XmlWriterMeta):
 
-    def __init__(self, *args, **kwargs):
-        for arg, field in zip(args, self._fields):
-            assert field not in kwargs, 'Got multiple arguments for %r' % field
-            kwargs[field] = arg
+class Model(base.Base, etree.ElementBase, metaclass=ModelMeta):
+    _element = None
 
-        print('args', args)
-        print('kwargs', kwargs)
-        print('self._fields', self._fields)
-        print('self._data', self._data)
-        for key, value in kwargs.items():
-            self._data[key] = value
-            element = ET.SubElement(self, key)
-            element.text = str(value)
+    def __set__(self, instance, value):
+        print('%s.__set__(%r, %r, %r)' % (
+            self.__class__.__name__, self, instance, value))
+        if not self._element:
+            self._element = etree.SubElement(instance, self._name)
 
-        ET.Element.__init__(self, self._get_name())
+        self._element.text = self._from_type(value)
 
-    def _get_name(self):
-        return self.__class__.__name__
-
-    def serialize(self):
-        return ET.tostring(self, encoding='unicode')
-
-    def __str__(self):
-        return self.serialize()
-
-    def __repr__(self):
-        return '<%s>' % self.__class__.__name__
+    def __get__(self, instance, owner):
+        print('Model.__get__', self, instance, owner)
+        return self._to_type(self._element.text)
